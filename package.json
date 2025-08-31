@@ -1,0 +1,19 @@
+{
+  "name": "mypage",
+  "version": "1.0.0",
+  "main": "start.js",
+  "type": "module",
+  "scripts": {
+    "test": "vitest",
+    "start": "node convert.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "marked": "^16.2.1"
+  },
+  "devDependencies": {
+    "vitest": "^3.2.4"
+  }
+}

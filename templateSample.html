@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>{{title}}</title>
+  <style>
+    body { font-family: sans-serif; display: flex; }
+    aside { width: 250px; padding: 1rem; border-right: 1px solid #ccc; }
+    main { flex: 1; padding: 2rem; }
+    a { text-decoration: none; display: block; margin: 0.25rem 0; }
+  </style>
+</head>
+<body>
+  <aside>
+    <h2>교안 목차</h2>
+    {{sidebar}}
+  </aside>
+  <main>
+    {{content}}
+  </main>
+</body>
+</html>

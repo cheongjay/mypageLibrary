@@ -1,0 +1,47 @@
+/* 기본 스타일 */
+:root {
+  --bg: #f9fafb;
+  --text: #1f2937;
+  --accent: #0ea5e9;
+  --card: #ffffff;
+  --muted: #6b7280;
+  --radius: 12px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+       background: var(--bg); color: var(--text); line-height: 1.6; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+.container { max-width: 960px; margin: 0 auto; padding: 2rem 1rem; }
+
+/* 헤더 */
+.site-header { background: var(--card); border-bottom: 1px solid #e5e7eb; position: sticky; top: 0; }
+.site-header .container { display: flex; justify-content: space-between; align-items: center; }
+.logo { font-size: 1.5rem; font-weight: 700; }
+.site-header nav a { margin-left: 1rem; }
+
+/* 소개 */
+.about-section { display: flex; align-items: center; gap: 2rem; }
+.profile-img { width: 150px; height: 150px; border-radius: 50%; object-fit: cover; }
+
+/* 기술 스택 */
+.skills-list { list-style: none; display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 1rem; }
+.skills-list ul{ list-style: none; display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 1rem; }
+.skills-list li { background: var(--card); padding: .5rem 1rem; border-radius: var(--radius);
+                  border: 1px solid #e5e7eb; list-style: none; }
+
+/* 프로젝트 */
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem; margin-top: 1rem; }
+.card { background: var(--card); border: 1px solid #e5e7eb; border-radius: var(--radius); padding: 1rem; }
+.card h3 { margin-bottom: .5rem; }
+.card li {list-style: none; }
+
+/* 포스팅 */
+.posts-list { margin-top: 1rem;}
+.posts-list li { margin-bottom: .5rem; list-style: none; display: flex; align-items: center; gap: 1rem;}
+
+/* 푸터 */
+.site-footer { text-align: center; padding: 2rem 1rem; background: var(--card); border-top: 1px solid #e5e7eb; color: var(--muted); }
+.site-footer a { color: var(--accent); }
