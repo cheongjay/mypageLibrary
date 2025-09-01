@@ -57,6 +57,8 @@ export function convert(inputDir, outputDir, baseUrl = "") {
           const md = fs.readFileSync(item.fullPath, "utf-8");
 
           let htmlContent = marked(md);
+          // log("변환 후 ");
+          // log(htmlContent);
 
           // 후처리: a태그의 href 중 .md → .html (앵커/쿼리 유지)
           //   예: href="foo.md#bar" → href="foo.html#bar"
@@ -112,8 +114,8 @@ export function buildPages() {
   const projectsHtml = readHtmlFragments(path.join(resultDir, "projects"));
   const skillsHtml   = readHtmlFragments(path.join(resultDir, "skills"));
 
-  log("프로젝트");
-  log(projectsHtml);
+
+  log(skillsHtml);
 
   const projectsHtmlList = extractProjects(projectsHtml);
   log(projectsHtmlList);
