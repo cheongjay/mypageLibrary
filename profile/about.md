@@ -1,6 +1,6 @@
 ## About
 
-안녕하세요
+하이
 
 > This sentence is just a placeholder filled with dancing commas and imaginary ideas.  
 > This sentence is just a placeholder filled with dancing commas and imaginary ideas.  

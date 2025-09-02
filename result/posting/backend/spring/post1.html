@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>포스트 상세 페이지</title>
+</head>
+<body>
+<h2>Bean 의 Scope Singleton, Prototype에 따른 빈 객체 생성 시점 비교하기</h2>
+<h3>이 포스트를 쓰게 된 배경</h3>
+<ul>
+  <li>여러 클래스(HeatTask, Timer, User) 에서 한 클래스(Microwave)에 대해 공통적으로 의존성을 갖는 전자레인지 프로그램을 제작하다가, 여러 클래스에서 의존 중인 Microwave가 같은 인스턴스일까?에 대한 의문에서 시작되었다.</li>
+  <li>그래서 의존하고 있는 각 Microwave 인스턴스의 주소를 출력했을 때 동일하게 나왔고, 이를 통해 Spring의 컨텍스트는 인스턴스를 한 개만 생성하는 싱글톤 패턴으로 방식으로 동작함을 알 수 있었다.</li>
+  <li>그렇다면 서로 다른 인스턴스를 갖게 할 수 있는 방법은 없을까? 라는 의문으로 이어졌고, Scope에 대해 알게 되고 Scope에 앞서 발견한 Singleton 뿐만 아니라 Prototype이 있다는 것도 알게 되었다.</li>
+  <li>이 후 공통 의존성인 Microwave에 Prototype 스코프를 설정하고 코드를 실행해보는 과정에서, <strong>Singleton과 Prototype 에 따라 빈 객체 인스턴스가 생성되는 시점이 다르다</strong>는 것을 발견하였다. 이를 알아보기 알아보기 위해 포스트를 작성한다.</li>
+</ul>
+<h3>
+  <strong>상황</strong>
+</h3>
+<ul>
+  <li>
+    <p>
+    <strong>Class  이름 - 필요한 의존성</strong>
+  </p>
+  <ul>
+    <li>
+      <p>
+      <strong>Microwave</strong> - 다른 클래스에 대한 의존성 <strong>없음</strong>
+    </p>
+    <pre>
+      <code class="language-java">// Microwave 클래스의 생성자
+      public Microwave()  //★
+      {
+      super();
+      this.isOpened = false;
+      this.isRunning = false;
+      this.temperature = 20;
+      System.out.println(System.identityHashCode(this)+&quot;----micro&quot;);
+      }
+    </code>
+  </pre>
+</li>
+<li>
+  <p>
+  <strong>Timer</strong> - <strong>Microwave</strong> 에 대한 의존성 <strong>필요</strong>
+</p>
+<pre>
+  <code class="language-java">// Timer 클래스의 생성자
+  public Timer(Microwave microwave) //★
+  {
+  super();
+  this.microwave = microwave;
+  System.out.println(System.identityHashCode(microwave)+&quot;----timer&quot;);
+  }
+</code>
+</pre>
+</li>
+<li>
+  <p>
+  <strong>HeatTask</strong> - <strong>Microwave</strong> 에 대한 의존성 <strong>필요</strong>
+</p>
+<pre>
+  <code class="language-java">// HeatTask 클래스의 생성자
+  public HeatTask(Microwave microwave)  //★
+  {
+  super();
+  this.microwave = microwave;
+  System.out.println(System.identityHashCode(microwave)+&quot;----heat&quot;);
+  }
+</code>
+</pre>
+</li>
+<li>
+  <p>
+  <strong>User</strong> - <strong>Microwave</strong> 에 대한 의존성 <strong>필요</strong>
+</p>
+<pre>
+  <code class="language-java">// User 클래스의 생성자
+  public User(@Value(&quot;10&quot;)int userNum, Microwave microwave) //★
+  {
+  this.userNum = userNum;
+  this.microwave = microwave;
+  this.scanner = new Scanner(System.in);
+  System.out.println(System.identityHashCode(microwave)+&quot;----user&quot;);
+  }
+</code>
+</pre>
+</li>
+</ul>
+</li>
+<li>
+  <p>
+  <strong>Class 와 Scope 설정</strong>
+</p>
+<ul>
+  <li>Microwave - Prototype <code>@Scope(ConfigurableBeanFactory.*SCOPE_PROTOTYPE*)</code>
+</li>
+<li>HeatTask, Timer, User - default scope == Singleton</li>
+</ul>
+</li>
+</ul>
+<h3>시나리오</h3>
+<ul>
+  <li>
+    <p>이 4개의 클래스들은 모두 <code>@Component</code> 어노테이션을 갖고 있기 때문에, Bean 객체로 관리됨.</p>
+  </li>
+  <li>
+    <p>Microwave에 의존 중인 세 개의 클래스(HeatTask, Timer, User) 생성자에서는 Microwave 객체 인스턴스의 주소를 출력하는 코드를 갖고 있음.</p>
+    <p>  <code>System.out.println(System.identityHashCode(microwave)+&quot;----클래스이름&quot;);</code> </p>
+  </li>
+  <li>
+    <p>Microwave는 <code>this</code> 키워드를 통해 자신의 인스턴스 주소를 출력하고 있음.</p>
+    <p>  <code>System.out.println(System.identityHashCode(this)+&quot;----micro&quot;);</code> </p>
+  </li>
+  <li>
+    <p>이때 <strong>MicrowaveMain</strong>라는 <strong>메인</strong> 클래스에서 <strong>위의 4개의 클래스들을 관리하는 컨텍스트</strong>를 만들고, <strong>getBean() 메서드</strong>를 통해 <strong>각각의 클래스의 객체 생성을 요청</strong>하면 어떻게 될까?</p>
+  </li>
+  <li>
+    <p>MicrowaveMain 메인 클래스에서 각 클래스의 <strong>객체 생성 요청 순서는</strong> 다음과 같다.</p>
+    <p>  : Microwave → Timer → HeatTask → User</p>
+    <ul>
+      <li>
+        <p>MicrowaveMain 코드 전문</p>
+        <pre>
+          <code class="language-java">package dev.syntax;
+          
+          import dev.syntax.model.Microwave;
+          import dev.syntax.thread.HeatTask;
+          import dev.syntax.thread.Timer;
+          import dev.syntax.thread.User;
+          import org.springframework.context.ApplicationContext;
+          import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+          
+          import java.sql.Time;
+          
+          public class MicrowaveMain {
+          public static void main(String[] args) {
+          ApplicationContext context
+          = new AnnotationConfigApplicationContext(&quot;dev.syntax&quot;);
+          
+          Microwave microwave = context.getBean(Microwave.class); //★
+          System.out.println(&quot;Main에서의 microwave = &quot; + System.identityHashCode(microwave));
+          
+          Timer timer = context.getBean(Timer.class); //★
+          HeatTask heat = context.getBean(HeatTask.class); //★
+          User user = context.getBean(User.class); //★
+          
+          microwave.addListener(heat);
+          microwave.addListener(timer);
+          
+          Thread timerThread = new Thread(timer);
+          Thread heatThread = new Thread(heat);
+          Thread userThread = new Thread(user);
+          
+          userThread.start();
+          timerThread.start();
+          heatThread.start();
+          }
+          }
+        </code>
+      </pre>
+    </li>
+  </ul>
+</li>
+</ul>
+<h3>예상 결과</h3>
+<p>: 메인에서 <strong>Microwave → Timer → HeatTask → User</strong> 순서대로 <strong>getBean을 호출</strong>하니, <strong>출력 순서</strong>도 똑같이 출력된다고 예상. (저 숫자들은 인스턴스의 주소로 값은 큰 의미는 없다.)</p>
+<pre>
+  <code class="language-java">904861801----micro
+  Main에서의 microwave = 904861801
+  494317290----micro
+  494317290----timer
+  1908981452----micro
+  1908981452----heat
+  6750210----micro
+  6750210----user
+</code>
+</pre>
+<h3>실제 결과</h3>
+<p>: <strong>HeatTask → Timer → User → Microwave</strong> 순으로 호출. 전혀 예상하지 못한 순서..</p>
+<pre>
+  <code class="language-java">1908981452----micro
+  1908981452----heat
+  494317290----micro
+  494317290----timer
+  6750210----micro
+  6750210----user
+  904861801----micro
+  Main에서의 microwave = 904861801
+</code>
+</pre>
+<p>
+<img src="image.png" alt="image.png">
+</p>
+<h3>왜 그럴까? Spring의 공식 문서를 찾아보자!</h3>
+<ul>
+  <li>
+    <p>
+    <strong>Bean Scopes</strong>에 대한 문서에서 관련 내용을 확인할 수 있었다.</p>
+    <p>  <img src="image%201.png" alt="image.png">
+  </p>
+  <ul>
+    <li>
+      <strong>싱글톤</strong> - <strong>컨테이너 당 싱글 인스턴스 객체</strong>를 갖는다고 한다.</li>
+      <li>
+        <strong>프로토타입</strong> - <strong>하나의 빈 정의</strong>에 대해 <strong>몇 개의 인스턴스</strong>를 가질 수 있다 = 즉 <strong>여러 인스턴스 생성 가능</strong>하다.</li>
+      </ul>
+      <p>  공식 문서 아래를 더 읽어보자.</p>
+      <p>  <strong>Singleton Scope</strong>에 대한 자세한 설명이다.</p>
+      <p>  읽어봤을 때, <strong>IoC 컨테이너가 정확히 하나의 빈 객체 인스턴스를 만든다</strong>고 나와있다.</p>
+      <p>  <img src="image%202.png" alt="image.png">
+    </p>
+    <p>  Prototype Scope 에 대한 자세한 설명이다.</p>
+    <p>  읽어봤을 때 getBean() 메서드를 호출했을 때 그 때 bean이 주입된다는 것을 알 수 있다.</p>
+    <p>  <img src="image%203.png" alt="image.png">
+  </p>
+  <p>  그 아래를 더 읽어보자.</p>
+  <p>  <strong>프로토타입 빈(Microwave) 의존성을 갖고 있는 싱글톤 빈(HeatTask, Timer, User)</strong>
+</p>
+<p>  즉 내 코드 상황과 딱 들어맞는 설명을 찾을 수 있었다.</p>
+<p>  여기서는 싱글톤 빈에 프로토타입 빈 의존성이 주입될 때 새로운 프로토타입 빈이 인스턴스화된다고 나와있다.</p>
+<p>  또한 프로토타입 인스턴스가 싱글톤 빈에 sole(단독의) instance 로 주입된다는 것을 알 수 있다.</p>
+<p>  <img src="image%204.png" alt="image.png">
+</p>
+</li>
+</ul>
+<h3>공식 문서를 통한 추론</h3>
+<p>공식 문서를 읽고 세 가지 추론을 할 수 있었다.</p>
+<ol>
+  <li>
+    <p>
+    <strong>Singleton</strong> scope Bean - <strong>컨테이너가 생성</strong>될 때 해당 인스턴스도 같이 만들어질 것이다,</p>
+  </li>
+  <li>
+    <p>
+    <strong>Prototype</strong> scope Bean - <strong>getBean</strong>이라는 메소드를 호출하거나, 혹은 <strong>이 빈을 의존하고 있는 다른 클래스가 인스턴스화될 때</strong> 인스턴스가 만들어질 것이다.</p>
+  </li>
+  <li>
+    <p>즉, 메인에서 getBean() 호출 순서는 <code>Microwave</code> →<code>Timer</code> →<code>HeatTask</code> →<code>User</code> 이지만,</p>
+    <p> 싱글톤으로 스코프가 정의돼있는 HeatTask, Timer, User는 컨텍스트가 생성될 때, 인스턴스가 함께 생성되고, </p>
+    <p> <code>ApplicationContext context = new AnnotationConfigApplicationContext(&quot;dev.syntax&quot;);</code>
+  </p>
+  <p> 그 이후에 프로토타입인 Microwave는 getBean이 호출되었을 때 그때서야 인스턴스를 만들 것이다.</p>
+</li>
+</ol>
+<h3>추론을 증명해보자!</h3>
+<ol>
+  <li>
+    <p>
+    <strong>메인 코드에서 context를 정의하는 코드를 제외하고 주석하여 실행해보자!</strong>
+  </p>
+  <p> <img src="image%205.png" alt="image.png">
+</p>
+<ul>
+  <li>
+    <p>
+    <strong>출력 결과 해석</strong>
+  </p>
+  <p>  싱글톤 객체인 heat, timer, user에 대해서만 출력됐다.</p>
+  <p>  이를 통해 <strong>컨텍스트가 생성</strong>될 때 <strong>싱글톤 빈들은 모두 인스턴스화됨</strong>을 알 수 있다.</p>
+</li>
+</ul>
+</li>
+<li>
+  <p>
+  <strong>Microwave를 싱글톤으로 바꾸어서 실행해보자!</strong>
+</p>
+<pre>
+  <code class="language-java">@Component
+  //@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
+  public class Microwave {
+</code>
+</pre>
+<p> <img src="image%206.png" alt="image.png">
+</p>
+<ul>
+  <li>
+    <p>
+    <strong>출력 결과 해석</strong>
+  </p>
+  <p>  Microwave가 싱글톤이 되었기 때문에, 이를 의존하는 다른 객체 인스턴스들이 생성될 때도 맨 처음에 만든 Microwave 객체가 재활용돼서 <strong>인스턴스 주소가 한 번씩만 출력</strong>되고, <strong>주소도 모두 동일함</strong>을 알 수 있다.</p>
+</li>
+</ul>
+</li>
+<li>
+  <p>
+  <strong>Microwave를 다시 프로토타입으로 만들고 getBean을 호출해보자!</strong>
+</p>
+<p> <img src="image%207.png" alt="image.png">
+</p>
+<ul>
+  <li>
+    <p>
+    <strong>출력 결과 해석</strong>
+  </p>
+  <p>  파란색 부분은 1번과 동일하고, getBean()이 호출될 때 그때서야 microwave 인스턴스가 만들어졌다. 즉 프로토타입 빈은 요청이 들어올 때마다 새로 생성됨을 알 수 있다.</p>
+</li>
+</ul>
+</li>
+</ol>
+<h3>결론</h3>
+<ul>
+  <li>
+    <p>Singleton Scope의 Bean은 컨텍스트가 생성되면서 함께 인스턴스화된다.</p>
+  </li>
+  <li>
+    <p>Prototype Scope의 Bean은 getBean() 처럼 인스턴스를 요청받을 때 새로운 인스턴스를 만든다.</p>
+  </li>
+  <li>
+    <p>만약 Singleton Scope의 Bean에서 Prototype Scope의 Bean을 생성자의 매개변수로 의존하고 있을 경우, Singleton Scope의 Bean이 인스턴스화되는 시점인 컨텍스트 생성 시점에 Prototype Scope의 Bean 인스턴스도 함께 생성된다.</p>
+  </li>
+  <li>
+    <p>추가로 공식 문서에서도 프로토타입 스코프는 stateful Bean에 대해서, 싱글톤은 stateless Bean에 대해서 사용하라고 강조하고 있다.</p>
+    <p>  <img src="image%208.png" alt="이 내용은 뭔가 싱글톤 빈이 공유자원처럼 쓰일 수 있기 때문일 것으로 예상하지만… 다음에 자세히 다뤄보겠당.">
+  </p>
+  <p>  이 내용은 뭔가 싱글톤 빈이 공유자원처럼 쓰일 수 있기 때문일 것으로 예상하지만… 다음에 자세히 다뤄보겠당.</p>
+</li>
+</ul>
+<h3>다음 주제</h3>
+<p>prototype은 configured destruction lifecycle 콜백(빈이 소멸될 때 호출되는 콜백 함수)이 호출되지 않는다는 것을 발견할 수 있었다. 이 내용을 다음엔 파보고 싶다!</p>
+<p>
+<img src="image%209.png" alt="image.png">
+</p>
+
+</body>
+</html>

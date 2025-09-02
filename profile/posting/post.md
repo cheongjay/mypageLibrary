@@ -1,0 +1,3 @@
+- [Bean 의 Scope Singleton, Prototype에 따른 빈 객체 생성 시점 비교하기](./posts/post1.md) <sub>(2025-08-22 · 7 min)</sub>  
+- [Kafka/Redis 테스트 전략 가이드](#) <sub>(2025-07-06 · 9 min)</sub>  
+- [Spring Boot + Docker 배포 자동화](#) <sub>(2025-06-18 · 8 min)</sub>
