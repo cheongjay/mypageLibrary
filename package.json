@@ -4,8 +4,7 @@
   "main": "start.js",
   "type": "module",
   "scripts": {
-    "test": "vitest",
-    "start": "node convert.js"
+    "test": "vitest"
   },
   "author": "",
   "license": "ISC",

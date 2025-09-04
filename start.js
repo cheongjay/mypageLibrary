@@ -8,7 +8,6 @@ convert('profile','result');
 
 // buildPages();
 // createPostPages();
-createPages();
 
 
 // makeCard("./result/projects");
